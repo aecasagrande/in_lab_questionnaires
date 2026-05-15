@@ -41,7 +41,7 @@ header{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;borde
 .brand-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--off),var(--on));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#fff}
 .brand-name{font-size:13px;font-weight:600;letter-spacing:-0.2px}
 .brand-sub{font-size:10px;color:var(--muted)}
-.tabs{display:flex;gap:2px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;display:none}
+.tabs{display:flex;gap:2px;background:var(--surf2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px}
 .tab{border:none;background:transparent;color:var(--muted);font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:6px 18px;border-radius:4px;cursor:pointer;transition:.15s}
 .tab.active{background:var(--surf3);color:var(--text)}
 .tab:hover:not(.active){color:var(--text)}
@@ -186,13 +186,13 @@ table.sum tr:last-child td{border-bottom:none}
 </style>
 </head>
 <body>
-
+<!-- HEADER -->
 <header>
   <div class="brand">
     <div class="brand-icon">IQ</div>
     <div>
       <div class="brand-name">In-Lab Questionnaire</div>
-      <div class="brand-sub">STAI-S &amp; SSQ &middot; OFF / ON</div>
+      <div class="brand-sub">STAI-S &amp; SSQ · OFF / ON</div>
     </div>
   </div>
   <div class="tabs" id="tabs">
@@ -207,7 +207,7 @@ table.sum tr:last-child td{border-bottom:none}
     <input type="file" id="hdr-input" accept=".csv" multiple style="display:none">
   </div>
 </header>
-
+<!-- DROP SCREEN -->
 <div id="drop-screen">
   <div class="dz" id="dz">
     <div class="dz-icon">📋</div>
@@ -218,13 +218,14 @@ table.sum tr:last-child td{border-bottom:none}
     <input type="file" id="dz-input" accept=".csv" multiple style="display:none">
   </div>
   <div class="hint-chips">
-    <div class="chip">STAI-S &middot; OFF &amp; ON</div>
-    <div class="chip">SSQ &middot; Pre &amp; Post VR</div>
+    <div class="chip">STAI-S · OFF &amp; ON</div>
+    <div class="chip">SSQ · Pre &amp; Post VR</div>
     <div class="chip">All Participants</div>
   </div>
 </div>
-
+<!-- APP -->
 <div id="app">
+  <!-- Individual View -->
   <div class="view active" id="individual-view">
     <div class="pbar" id="pbar">
       <span class="pbar-lbl">Participant</span>
@@ -234,7 +235,7 @@ table.sum tr:last-child td{border-bottom:none}
       <div class="state-col on-col" id="on-col"></div>
     </div>
   </div>
-
+  <!-- Group View -->
   <div class="view" id="group-view">
     <div class="g-section">
       <div class="g-title">Score Summary — All Participants</div>
@@ -278,7 +279,7 @@ table.sum tr:last-child td{border-bottom:none}
     <div class="g-section">
       <div class="g-title">SSQ Subscales — Group Mean by Timepoint</div>
       <div class="chart-card">
-        <div class="chart-desc">Nausea &middot; Oculomotor &middot; Disorientation weighted subscale scores (Kennedy et al. 1993).</div>
+        <div class="chart-desc">Nausea · Oculomotor · Disorientation weighted subscale scores (Kennedy et al. 1993).</div>
         <div class="legend">
           <div class="leg-item"><div class="leg-dot" style="background:var(--n-col)"></div>Nausea</div>
           <div class="leg-item"><div class="leg-dot" style="background:var(--o-col)"></div>Oculomotor</div>
@@ -290,13 +291,12 @@ table.sum tr:last-child td{border-bottom:none}
     <div class="g-section">
       <div class="g-title">Individual SSQ Item Heatmap — Group</div>
       <div class="chart-card">
-        <div class="chart-desc">Mean severity per SSQ item across all participants (0=None &middot; 1=Slight &middot; 2=Moderate &middot; 3=Severe).</div>
+        <div class="chart-desc">Mean severity per SSQ item across all participants (0=None · 1=Slight · 2=Moderate · 3=Severe).</div>
         <div class="chart-wrap" style="height:300px"><canvas id="chart-heatmap"></canvas></div>
       </div>
     </div>
   </div>
 </div>
-
 <script>
 /* ═══════════════ CONSTANTS ═══════════════ */
 const STAI_ITEMS = [
@@ -307,7 +307,6 @@ const STAI_ITEMS = [
   'I am worried','I feel confused','I feel steady','I feel pleasant'
 ];
 const STAI_REV = new Set([0,1,4,7,9,10,14,15,18,19]); // anxiety-absent items
-
 const SSQ_ITEMS = [
   'General discomfort','Fatigue','Headache','Eyestrain',
   'Difficulty focusing','Increased salivation','Sweating','Nausea',
@@ -318,11 +317,12 @@ const SSQ_ITEMS = [
 const SSQ_N = [0,5,6,7,14,15];      // Nausea items (0-indexed)
 const SSQ_O = [0,1,2,3,4,8,10];     // Oculomotor items
 const SSQ_D = [4,7,9,10,11,12,13];  // Disorientation items
-const SSQ_SUB = {N:SSQ_N,O:SSQ_O,D:SSQ_D};
 
-// Column indices in the raw CSV (0-indexed)
+// Verified column indices from the actual Qualtrics export structure
+// Row 0 = header names, Row 1 = question text, Row 2 = import IDs
+// Data starts at Row 3. Columns are 0-indexed.
 const C = {
-  pid: 17, status: 2,
+  pid: 17,
   staiOff:    [19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38],
   motPreOff:  39,
   ssqPreOff:  [41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56],
@@ -365,11 +365,9 @@ function parseVal(raw, type) {
   }
   return null;
 }
-
 function extractCols(row, cols, type) {
   return cols.map(c => parseVal(row[c], type));
 }
-
 function calcSTAI(items) {
   let sum = 0, n = 0;
   items.forEach((v, i) => {
@@ -378,9 +376,8 @@ function calcSTAI(items) {
     sum += scored;
     n++;
   });
-  return n >= 10 ? sum : null; // require at least half answered
+  return n >= 10 ? sum : null;
 }
-
 function calcSSQ(items) {
   let Nr=0, Or=0, Dr=0, Nn=0, On=0, Dn=0;
   SSQ_N.forEach(i => { if (items[i] !== null) { Nr += items[i]; Nn++; } });
@@ -396,14 +393,11 @@ function calcSSQ(items) {
     items: items
   };
 }
-
 function parseParticipants(rows) {
-  // rows = raw array-of-arrays (already past 3 header rows)
   const byId = {};
   rows.forEach(row => {
     const pid = String(row[C.pid] || '').trim();
-    if (!pid || pid.startsWith('{') || pid === 'nan') return;
-    // Count non-null data cells to pick most complete row if duplicated
+    if (!pid || pid.startsWith('{') || pid === 'nan' || pid === '') return;
     const dataCount = [...C.staiOff, ...C.ssqPreOff, ...C.staiOn, ...C.ssqPreOn]
       .filter(c => row[c] !== null && row[c] !== undefined && String(row[c]).trim() !== '').length;
     if (!byId[pid] || dataCount > byId[pid]._count) {
@@ -423,7 +417,6 @@ function parseParticipants(rows) {
     p.ssqPreOn   = extractCols(row, C.ssqPreOn, 'ssq');
     p.motPostOn  = parseVal(row[C.motPostOn], 'motion');
     p.ssqPostOn  = extractCols(row, C.ssqPostOn, 'ssq');
-
     p.scores = {
       staiOff: calcSTAI(p.staiOff),
       staiOn:  calcSTAI(p.staiOn),
@@ -434,7 +427,6 @@ function parseParticipants(rows) {
     };
     participants.push(p);
   });
-  // Sort: pilot last, then alphabetical
   participants.sort((a, b) => {
     if (a.pilot !== b.pilot) return a.pilot ? 1 : -1;
     return a.id.localeCompare(b.id);
@@ -460,7 +452,6 @@ function renderParticipantBar() {
     bar.appendChild(btn);
   });
 }
-
 function selectParticipant(id) {
   selectedId = id;
   renderParticipantBar();
@@ -468,7 +459,6 @@ function selectParticipant(id) {
   renderStateCol('off', p);
   renderStateCol('on', p);
 }
-
 function renderStateCol(state, p) {
   const col = document.getElementById(state + '-col');
   const isOff = state === 'off';
@@ -478,10 +468,7 @@ function renderStateCol(state, p) {
   const motPost = isOff ? p.motPostOff : p.motPostOn;
   const ssqPost = isOff ? p.ssqPostOff : p.ssqPostOn;
   const sc = isOff ? p.scores.staiOff : p.scores.staiOn;
-  const label = isOff ? 'OFF State' : 'ON State (Medication)';
-
   const hasAnyData = stai.some(v => v !== null) || ssqPre.some(v => v !== null) || ssqPost.some(v => v !== null);
-
   let html = `<div class="state-hdr ${state}">
     <div>
       <div class="state-tag ${state}">${state.toUpperCase()} STATE</div>
@@ -489,29 +476,21 @@ function renderStateCol(state, p) {
     </div>
     <div class="state-total">${sc !== null ? `STAI: ${sc}` : ''}</div>
   </div>`;
-
   if (!hasAnyData) {
     html += `<div class="nodata"><div class="nodata-icon">○</div>No data recorded for this session</div>`;
     col.innerHTML = html;
     return;
   }
-
-  // STAI
   html += renderSTAI(stai, sc, state);
-  // SSQ Pre-VR
   html += renderSSQ('Pre-VR SSQ', motPre, ssqPre, state);
-  // SSQ Post-VR
   html += renderSSQ('Post-VR SSQ', motPost, ssqPost, state);
-
   col.innerHTML = html;
 }
-
 function renderSTAI(items, total, state) {
   const hasData = items.some(v => v !== null);
   let rows = '';
   items.forEach((v, i) => {
     const isRev = STAI_REV.has(i);
-    const scored = (v !== null && isRev) ? (5 - v) : v;
     let pips = '';
     for (let p = 1; p <= 4; p++) {
       pips += `<div class="pip ${p <= (v || 0) ? 'v' + p : ''}"></div>`;
@@ -523,11 +502,9 @@ function renderSTAI(items, total, state) {
       <div class="stai-num">${v !== null ? v : '—'}</div>
     </div>`;
   });
-
   const pct = total !== null ? ((total - 20) / 60 * 100) : 0;
   const barColor = total === null ? 'var(--border)' :
     pct < 33 ? 'var(--green)' : pct < 66 ? 'var(--yellow)' : 'var(--red)';
-
   const footHtml = total !== null ? `
     <div class="stai-footer">
       <div>
@@ -544,16 +521,14 @@ function renderSTAI(items, total, state) {
         <div class="stai-bar-fill" style="width:${pct}%;background:${barColor}"></div>
       </div>
     </div>` : `<div class="stai-footer"><div class="stai-total-lbl" style="color:var(--muted)">Incomplete data</div></div>`;
-
   return `<div class="sec-card">
     <div class="sec-head">
-      <div class="sec-title">STAI-S &middot; State Anxiety</div>
+      <div class="sec-title">STAI-S · State Anxiety</div>
       <div class="sec-score ${state}">${total !== null ? total : '—'}</div>
     </div>
     ${hasData ? `<div class="stai-items">${rows}</div>${footHtml}` : `<div class="nodata"><div class="nodata-icon">—</div>Not recorded</div>`}
   </div>`;
 }
-
 function renderSSQ(title, motionSick, items, state) {
   const hasData = items.some(v => v !== null);
   const scores = hasData ? calcSSQ(items) : null;
@@ -561,304 +536,471 @@ function renderSSQ(title, motionSick, items, state) {
   let motHtml = '';
   if (motionSick !== null) {
     motHtml = `<div class="motion-badge ${motionSick ? 'yes' : 'no'}">
-      <div class="dot"></div>${motionSick ? 'Yes' : 'No'} &mdash; Prone to motion sickness
+      <div class="dot"></div>${motionSick ? 'Motion sick' : 'Not motion sick'}
     </div>`;
   }
 
-  let rows = '';
-  items.forEach((v, i) => {
-    const sevClass = v === null ? 's0' : 's' + v;
-    const sevLbl = v === 0 ? 'None' : v === 1 ? 'Slight' : v === 2 ? 'Moderate' : v === 3 ? 'Severe' : '—';
-    const pct = v !== null ? (v / 3 * 100) : 0;
-    const barColor = v === 1 ? 'var(--yellow)' : v === 2 ? 'var(--orange)' : v === 3 ? 'var(--red)' : 'var(--border)';
+  let rowsHtml = '';
+  if (hasData) {
+    items.forEach((v, i) => {
+      const inN = SSQ_N.includes(i);
+      const inO = SSQ_O.includes(i);
+      const inD = SSQ_D.includes(i);
+      const pct = v !== null ? (v / 3 * 100) : 0;
+      const barColor = v === 0 ? 'var(--muted)' : v === 1 ? 'var(--yellow)' : v === 2 ? 'var(--orange)' : 'var(--red)';
+      const sevLabel = v === null ? '—' : ['None','Slight','Moderate','Severe'][v];
+      const sevClass = v === null ? 's0' : 's' + v;
+      rowsHtml += `<div class="ssq-row">
+        <div class="ssq-subscale-tags">
+          <span class="ss-tag N ${inN && v > 0 ? 'on' : ''}">N</span>
+          <span class="ss-tag O ${inO && v > 0 ? 'on' : ''}">O</span>
+          <span class="ss-tag D ${inD && v > 0 ? 'on' : ''}">D</span>
+        </div>
+        <div class="ssq-lbl" title="${SSQ_ITEMS[i]}">${SSQ_ITEMS[i]}</div>
+        <div class="ssq-bar-bg"><div class="ssq-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="ssq-sev-lbl ${sevClass}">${sevLabel}</div>
+      </div>`;
+    });
+  }
 
-    const tagN = SSQ_N.includes(i) ? 'N on' : 'N';
-    const tagO = SSQ_O.includes(i) ? 'O on' : 'O';
-    const tagD = SSQ_D.includes(i) ? 'D on' : 'D';
-
-    rows += `<div class="ssq-row">
-      <div class="ssq-subscale-tags">
-        <div class="ss-tag ${tagN}">N</div>
-        <div class="ss-tag ${tagO}">O</div>
-        <div class="ss-tag ${tagD}">D</div>
-      </div>
-      <div class="ssq-lbl" title="${SSQ_ITEMS[i]}">${SSQ_ITEMS[i]}</div>
-      <div class="ssq-bar-bg"><div class="ssq-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-      <div class="ssq-sev-lbl ${sevClass}">${sevLbl}</div>
-    </div>`;
-  });
-
-  const footHtml = scores !== null ? `
-    <div class="ssq-subscores">
+  let subscoresHtml = '';
+  if (scores) {
+    subscoresHtml = `<div class="ssq-subscores">
       <div class="ss-cell">
         <div class="ss-cell-lbl">Nausea</div>
         <div class="ss-cell-val n">${scores.nausea}</div>
-        <div class="ss-cell-sub">Raw: ${scores.nRaw}</div>
+        <div class="ss-cell-sub">×9.54</div>
       </div>
       <div class="ss-cell">
         <div class="ss-cell-lbl">Oculomotor</div>
         <div class="ss-cell-val o">${scores.ocular}</div>
-        <div class="ss-cell-sub">Raw: ${scores.oRaw}</div>
+        <div class="ss-cell-sub">×7.58</div>
       </div>
       <div class="ss-cell">
-        <div class="ss-cell-lbl">Disorient</div>
+        <div class="ss-cell-lbl">Disorientation</div>
         <div class="ss-cell-val d">${scores.disori}</div>
-        <div class="ss-cell-sub">Raw: ${scores.dRaw}</div>
+        <div class="ss-cell-sub">×13.92</div>
       </div>
-      <div class="ss-cell" style="background:var(--surf3)">
-        <div class="ss-cell-lbl" style="color:var(--text)">Total</div>
+      <div class="ss-cell">
+        <div class="ss-cell-lbl">Total</div>
         <div class="ss-cell-val t">${scores.total}</div>
-        <div class="ss-cell-sub">SSQ TS</div>
+        <div class="ss-cell-sub">×3.74</div>
       </div>
-    </div>` : '';
+    </div>`;
+  }
 
   return `<div class="sec-card">
     <div class="sec-head">
       <div class="sec-title">${title}</div>
-      <div class="sec-score ${state}">${scores !== null ? scores.total : '—'}</div>
+      <div class="sec-score ${state}">${scores ? scores.total : '—'}</div>
     </div>
     ${motHtml}
-    ${hasData ? `<div class="ssq-items">${rows}</div>${footHtml}` : `<div class="nodata"><div class="nodata-icon">—</div>Not recorded</div>`}
+    ${hasData
+      ? `<div class="ssq-items">${rowsHtml}</div>${subscoresHtml}`
+      : `<div class="nodata"><div class="nodata-icon">—</div>Not recorded</div>`
+    }
   </div>`;
 }
 
-/* ═══════════════ RENDER: GROUP ═══════════════ */
+/* ═══════════════ RENDER: GROUP VIEW ═══════════════ */
 function renderGroupView() {
   renderSummaryTable();
   renderCharts();
 }
-
 function renderSummaryTable() {
-  const tbody = document.getElementById('sum-table');
-  let html = `<tr>
-    <th class="pid-h">Participant</th>
+  const tbl = document.getElementById('sum-table');
+  const ps = participants.filter(p => !p.pilot);
+  tbl.innerHTML = `<thead><tr>
+    <th class="pid-h">ID</th>
     <th class="off-h">STAI OFF</th>
     <th class="on-h">STAI ON</th>
     <th class="off-h">SSQ Pre OFF</th>
     <th class="off-h">SSQ Post OFF</th>
     <th class="on-h">SSQ Pre ON</th>
     <th class="on-h">SSQ Post ON</th>
-  </tr>`;
-
-  participants.forEach(p => {
-    const sc = p.scores;
-    const val = (s, state) => s !== null ? `<span class="${state}">${s}</span>` : '<span class="na">—</span>';
-    html += `<tr>
+    <th>Motion Pre OFF</th>
+    <th>Motion Post OFF</th>
+    <th>Motion Pre ON</th>
+    <th>Motion Post ON</th>
+  </tr></thead>
+  <tbody>${ps.map(p => {
+    const s = p.scores;
+    const fmt = v => v !== null ? v : '<span style="color:var(--border)">—</span>';
+    const fmtM = v => v === null ? '<span style="color:var(--border)">—</span>'
+      : v ? '<span style="color:var(--red)">Yes</span>' : '<span style="color:var(--green)">No</span>';
+    return `<tr>
       <td class="pid">${p.id}</td>
-      <td>${val(sc.staiOff, 'off')}</td>
-      <td>${val(sc.staiOn, 'on')}</td>
-      <td>${val(sc.ssqPreOff?.total, 'off')}</td>
-      <td>${val(sc.ssqPostOff?.total, 'off')}</td>
-      <td>${val(sc.ssqPreOn?.total, 'on')}</td>
-      <td>${val(sc.ssqPostOn?.total, 'on')}</td>
+      <td class="off">${fmt(s.staiOff)}</td>
+      <td class="on">${fmt(s.staiOn)}</td>
+      <td class="off">${fmt(s.ssqPreOff?.total ?? null)}</td>
+      <td class="off">${fmt(s.ssqPostOff?.total ?? null)}</td>
+      <td class="on">${fmt(s.ssqPreOn?.total ?? null)}</td>
+      <td class="on">${fmt(s.ssqPostOn?.total ?? null)}</td>
+      <td>${fmtM(p.motPreOff)}</td>
+      <td>${fmtM(p.motPostOff)}</td>
+      <td>${fmtM(p.motPreOn)}</td>
+      <td>${fmtM(p.motPostOn)}</td>
     </tr>`;
-  });
-  tbody.innerHTML = html;
+  }).join('')}</tbody>`;
 }
-
-function getMean(arr) {
-  const valid = arr.filter(x => x !== null && !isNaN(x));
-  return valid.length ? (valid.reduce((a, b) => a + b, 0) / valid.length) : null;
+function mean(arr) {
+  const valid = arr.filter(v => v !== null && v !== undefined);
+  return valid.length ? valid.reduce((a,b) => a+b, 0) / valid.length : null;
 }
-
-function buildChart(id, config) {
-  if (charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id).getContext('2d');
-  
-  Chart.defaults.color = '#94a3b8';
-  Chart.defaults.font.family = "'JetBrains Mono', monospace";
-  Chart.defaults.font.size = 10;
-  
-  charts[id] = new Chart(ctx, config);
+function chartDefaults() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a2235',
+        borderColor: '#283348',
+        borderWidth: 1,
+        titleColor: '#dde4f0',
+        bodyColor: '#94a3b8',
+        padding: 10,
+      }
+    },
+    scales: {
+      x: { grid: { color: '#283348' }, ticks: { color: '#64748b', font: { family: "'JetBrains Mono'" } } },
+      y: { grid: { color: '#283348' }, ticks: { color: '#64748b', font: { family: "'JetBrains Mono'" } } }
+    }
+  };
 }
-
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
 function renderCharts() {
-  const labels = participants.map(p => p.id);
+  const ps = participants.filter(p => !p.pilot);
+  const labels = ps.map(p => p.id);
 
-  // 1. STAI Chart
-  buildChart('chart-stai', {
+  // ── STAI grouped bar
+  destroyChart('stai');
+  charts['stai'] = new Chart(document.getElementById('chart-stai'), {
     type: 'bar',
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        { label: 'OFF', data: participants.map(p => p.scores.staiOff), backgroundColor: '#5b9cf6', borderRadius: 4 },
-        { label: 'ON', data: participants.map(p => p.scores.staiOn), backgroundColor: '#f5a54a', borderRadius: 4 }
+        {
+          label: 'OFF',
+          data: ps.map(p => p.scores.staiOff),
+          backgroundColor: 'rgba(91,156,246,0.6)',
+          borderColor: 'rgba(91,156,246,1)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: 'ON',
+          data: ps.map(p => p.scores.staiOn),
+          backgroundColor: 'rgba(245,165,74,0.6)',
+          borderColor: 'rgba(245,165,74,1)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: false, min: 20, max: 80, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      ...chartDefaults(),
+      plugins: {
+        ...chartDefaults().plugins,
+        legend: { display: true, labels: { color: '#94a3b8', boxWidth: 10, font: { family: "'Sora'" } } }
+      },
+      scales: {
+        ...chartDefaults().scales,
+        y: { ...chartDefaults().scales.y, min: 20, max: 80, title: { display: true, text: 'Score', color: '#64748b' } }
+      }
     }
   });
 
-  // 2. SSQ OFF Chart
-  buildChart('chart-ssq-off', {
+  // ── SSQ OFF
+  destroyChart('ssq-off');
+  charts['ssq-off'] = new Chart(document.getElementById('chart-ssq-off'), {
     type: 'bar',
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        { label: 'Pre-VR OFF', data: participants.map(p => p.scores.ssqPreOff?.total), backgroundColor: 'rgba(91,156,246,0.4)', borderRadius: 4 },
-        { label: 'Post-VR OFF', data: participants.map(p => p.scores.ssqPostOff?.total), backgroundColor: '#5b9cf6', borderRadius: 4 }
+        {
+          label: 'Pre-VR',
+          data: ps.map(p => p.scores.ssqPreOff?.total ?? null),
+          backgroundColor: 'rgba(91,156,246,0.3)',
+          borderColor: 'rgba(91,156,246,0.5)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: 'Post-VR',
+          data: ps.map(p => p.scores.ssqPostOff?.total ?? null),
+          backgroundColor: 'rgba(91,156,246,0.7)',
+          borderColor: 'rgba(91,156,246,1)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      ...chartDefaults(),
+      plugins: {
+        ...chartDefaults().plugins,
+        legend: { display: false }
+      }
     }
   });
 
-  // 3. SSQ ON Chart
-  buildChart('chart-ssq-on', {
+  // ── SSQ ON
+  destroyChart('ssq-on');
+  charts['ssq-on'] = new Chart(document.getElementById('chart-ssq-on'), {
     type: 'bar',
     data: {
-      labels: labels,
+      labels,
       datasets: [
-        { label: 'Pre-VR ON', data: participants.map(p => p.scores.ssqPreOn?.total), backgroundColor: 'rgba(245,165,74,0.4)', borderRadius: 4 },
-        { label: 'Post-VR ON', data: participants.map(p => p.scores.ssqPostOn?.total), backgroundColor: '#f5a54a', borderRadius: 4 }
+        {
+          label: 'Pre-VR',
+          data: ps.map(p => p.scores.ssqPreOn?.total ?? null),
+          backgroundColor: 'rgba(245,165,74,0.3)',
+          borderColor: 'rgba(245,165,74,0.5)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: 'Post-VR',
+          data: ps.map(p => p.scores.ssqPostOn?.total ?? null),
+          backgroundColor: 'rgba(245,165,74,0.7)',
+          borderColor: 'rgba(245,165,74,1)',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      ...chartDefaults(),
+      plugins: {
+        ...chartDefaults().plugins,
+        legend: { display: false }
+      }
     }
   });
 
-  // 4. Group Mean Subscales over Timepoints
-  const timeLabels = ['Pre-OFF', 'Post-OFF', 'Pre-ON', 'Post-ON'];
-  const getSub = (key) => [
-    getMean(participants.map(p => p.scores.ssqPreOff?.[key])),
-    getMean(participants.map(p => p.scores.ssqPostOff?.[key])),
-    getMean(participants.map(p => p.scores.ssqPreOn?.[key])),
-    getMean(participants.map(p => p.scores.ssqPostOn?.[key]))
-  ];
-
-  buildChart('chart-sub', {
-    type: 'line',
+  // ── Subscale grouped bar (4 groups: OFF-Pre, OFF-Post, ON-Pre, ON-Post)
+  destroyChart('sub');
+  const subLabels = ['OFF Pre-VR', 'OFF Post-VR', 'ON Pre-VR', 'ON Post-VR'];
+  function meanSub(key, sub) {
+    const vals = ps.map(p => {
+      const sc = p.scores[key];
+      return sc ? sc[sub] : null;
+    });
+    return mean(vals);
+  }
+  charts['sub'] = new Chart(document.getElementById('chart-sub'), {
+    type: 'bar',
     data: {
-      labels: timeLabels,
+      labels: subLabels,
       datasets: [
-        { label: 'Nausea', data: getSub('nausea'), borderColor: '#86efac', backgroundColor: '#86efac', tension: 0.3 },
-        { label: 'Oculomotor', data: getSub('ocular'), borderColor: '#93c5fd', backgroundColor: '#93c5fd', tension: 0.3 },
-        { label: 'Disorientation', data: getSub('disori'), borderColor: '#c4b5fd', backgroundColor: '#c4b5fd', tension: 0.3 }
+        {
+          label: 'Nausea',
+          data: [
+            meanSub('ssqPreOff','nausea'), meanSub('ssqPostOff','nausea'),
+            meanSub('ssqPreOn','nausea'),  meanSub('ssqPostOn','nausea'),
+          ],
+          backgroundColor: 'rgba(134,239,172,0.6)',
+          borderColor: '#86efac',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: 'Oculomotor',
+          data: [
+            meanSub('ssqPreOff','ocular'), meanSub('ssqPostOff','ocular'),
+            meanSub('ssqPreOn','ocular'),  meanSub('ssqPostOn','ocular'),
+          ],
+          backgroundColor: 'rgba(147,197,253,0.6)',
+          borderColor: '#93c5fd',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
+        {
+          label: 'Disorientation',
+          data: [
+            meanSub('ssqPreOff','disori'), meanSub('ssqPostOff','disori'),
+            meanSub('ssqPreOn','disori'),  meanSub('ssqPostOn','disori'),
+          ],
+          backgroundColor: 'rgba(196,181,253,0.6)',
+          borderColor: '#c4b5fd',
+          borderWidth: 1.5,
+          borderRadius: 4,
+        },
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
+      ...chartDefaults(),
+      plugins: {
+        ...chartDefaults().plugins,
+        legend: { display: true, labels: { color: '#94a3b8', boxWidth: 10, font: { family: "'Sora'" } } }
+      }
     }
   });
 
-  // 5. Item Heatmap (Mean Severity)
-  const heatmapData = SSQ_ITEMS.map((item, i) => {
-    return {
-      label: item,
-      data: [
-        getMean(participants.map(p => p.ssqPreOff[i])),
-        getMean(participants.map(p => p.ssqPostOff[i])),
-        getMean(participants.map(p => p.ssqPreOn[i])),
-        getMean(participants.map(p => p.ssqPostOn[i]))
-      ]
-    };
+  // ── Heatmap (horizontal bar chart showing mean severity per SSQ item)
+  destroyChart('heatmap');
+  const timepoints = ['OFF Pre', 'OFF Post', 'ON Pre', 'ON Post'];
+  const keys = ['ssqPreOff','ssqPostOff','ssqPreOn','ssqPostOn'];
+  const heatData = SSQ_ITEMS.map((item, i) => {
+    return keys.map(k => {
+      const vals = ps.map(p => p.scores[k]?.items?.[i] ?? null);
+      return mean(vals);
+    });
   });
 
-  buildChart('chart-heatmap', {
+  // Use a stacked bar chart as heatmap approximation
+  charts['heatmap'] = new Chart(document.getElementById('chart-heatmap'), {
     type: 'bar',
     data: {
       labels: SSQ_ITEMS,
-      datasets: timeLabels.map((time, tIdx) => ({
-        label: time,
-        data: heatmapData.map(h => h.data[tIdx]),
-        backgroundColor: tIdx === 0 ? 'rgba(91,156,246,0.4)' : tIdx === 1 ? '#5b9cf6' : tIdx === 2 ? 'rgba(245,165,74,0.4)' : '#f5a54a',
+      datasets: timepoints.map((tp, ti) => ({
+        label: tp,
+        data: SSQ_ITEMS.map((_, i) => heatData[i][ti]),
+        backgroundColor: [
+          'rgba(91,156,246,0.45)',
+          'rgba(91,156,246,0.85)',
+          'rgba(245,165,74,0.45)',
+          'rgba(245,165,74,0.85)',
+        ][ti],
+        borderColor: [
+          'rgba(91,156,246,0.7)',
+          'rgba(91,156,246,1)',
+          'rgba(245,165,74,0.7)',
+          'rgba(245,165,74,1)',
+        ][ti],
+        borderWidth: 1,
+        borderRadius: 2,
       }))
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { max: 3, beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } } }
-    }
-  });
-}
-
-/* ═══════════════ APP INITIALIZATION & EVENTS ═══════════════ */
-
-// Tab Switching logic
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', (e) => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    
-    e.target.classList.add('active');
-    const targetView = e.target.dataset.tab + '-view';
-    document.getElementById(targetView).classList.add('active');
-    
-    if (e.target.dataset.tab === 'group') renderGroupView();
-  });
-});
-
-// File Parsing
-function handleFiles(files) {
-  if (!files || !files.length) return;
-  const file = files[0];
-  
-  document.getElementById('led').classList.add('on');
-  document.getElementById('load-lbl').textContent = file.name;
-
-  Papa.parse(file, {
-    skipEmptyLines: true,
-    complete: function(results) {
-      // Qualtrics CSVs contain 3 header rows, data starts at index 3
-      const dataRows = results.data.slice(3);
-      participants = parseParticipants(dataRows);
-
-      // Transition views
-      document.getElementById('drop-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      document.getElementById('tabs').style.display = 'flex';
-
-      if (participants.length > 0) {
-        selectParticipant(participants[0].id);
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#94a3b8', boxWidth: 10, font: { family: "'Sora'", size: 10 } } },
+        tooltip: {
+          backgroundColor: '#1a2235',
+          borderColor: '#283348',
+          borderWidth: 1,
+          titleColor: '#dde4f0',
+          bodyColor: '#94a3b8',
+          padding: 10,
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.raw !== null ? ctx.raw.toFixed(2) : '—'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 0, max: 3,
+          grid: { color: '#283348' },
+          ticks: { color: '#64748b', font: { family: "'JetBrains Mono'" } },
+          title: { display: true, text: 'Mean Severity (0–3)', color: '#64748b', font: { size: 10 } }
+        },
+        y: {
+          grid: { color: '#283348' },
+          ticks: { color: '#94a3b8', font: { family: "'Sora'", size: 10 } }
+        }
       }
     }
   });
 }
 
-// Drag and Drop Logic
-const dropZone = document.getElementById('dz');
-const dzInput = document.getElementById('dz-input');
-const hdrInput = document.getElementById('hdr-input');
-const browseBtn = document.getElementById('browse-btn');
+/* ═══════════════ FILE LOADING ═══════════════ */
+function skipQualtricsHeaders(rows) {
+  // Qualtrics exports have 3 header rows:
+  //   Row 0: column names (e.g. "Participant ID")
+  //   Row 1: question text (long strings, may contain embedded newlines)
+  //   Row 2: import IDs (values look like {"ImportId":"QID..."})
+  // We detect the end of headers by finding the last row where col[17]
+  // starts with '{' or is a known header label, then skip past it.
+  // This is robust against PapaParse splitting embedded newlines differently.
+  let skipUntil = 0;
+  for (let i = 0; i < Math.min(rows.length, 20); i++) {
+    const pid = String(rows[i][17] || '').trim();
+    if (pid === 'Participant ID' || pid === 'Enter Participant ID' || pid.startsWith('{')) {
+      skipUntil = i + 1;
+    }
+  }
+  return rows.slice(skipUntil);
+}
+function loadFiles(files) {
+  const allRows = [];
+  let remaining = files.length;
+  Array.from(files).forEach(file => {
+    Papa.parse(file, {
+      skipEmptyLines: false,
+      complete: result => {
+        const dataRows = skipQualtricsHeaders(result.data);
+        allRows.push(...dataRows);
+        remaining--;
+        if (remaining === 0) finalize(allRows, files);
+      }
+    });
+  });
+}
+function finalize(allRows, files) {
+  participants = parseParticipants(allRows);
+  if (!participants.length) {
+    alert('No participant data found. Please check the CSV format.');
+    return;
+  }
+  // Show app
+  document.getElementById('drop-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('tabs').style.display = 'flex';
+  document.getElementById('led').classList.add('on');
+  document.getElementById('load-lbl').textContent =
+    `${files.length} file${files.length > 1 ? 's' : ''} · ${participants.length} participants`;
 
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-  dropZone.addEventListener(eventName, preventDefaults, false);
-});
-
-function preventDefaults(e) {
-  e.preventDefault();
-  e.stopPropagation();
+  renderParticipantBar();
+  // Select first non-pilot, or first
+  const first = participants.find(p => !p.pilot) || participants[0];
+  selectParticipant(first.id);
+  renderGroupView();
 }
 
-['dragenter', 'dragover'].forEach(eventName => {
-  dropZone.addEventListener(eventName, () => dropZone.classList.add('over'), false);
+/* ═══════════════ TAB SWITCHING ═══════════════ */
+document.getElementById('tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(tab + '-view').classList.add('active');
+  if (tab === 'group') renderGroupView();
 });
 
-['dragleave', 'drop'].forEach(eventName => {
-  dropZone.addEventListener(eventName, () => dropZone.classList.remove('over'), false);
+/* ═══════════════ DRAG & DROP ═══════════════ */
+const dz = document.getElementById('dz');
+const dzInput = document.getElementById('dz-input');
+const browseBtn = document.getElementById('browse-btn');
+const hdrInput = document.getElementById('hdr-input');
+
+browseBtn.onclick = () => dzInput.click();
+dzInput.onchange = e => loadFiles(e.target.files);
+hdrInput.onchange = e => loadFiles(e.target.files);
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('over');
+  if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
+});
+dz.addEventListener('click', e => {
+  if (e.target !== browseBtn) dzInput.click();
 });
 
-dropZone.addEventListener('drop', (e) => {
-  handleFiles(e.dataTransfer.files);
-}, false);
-
-dropZone.addEventListener('click', () => dzInput.click());
-browseBtn.addEventListener('click', (e) => { e.stopPropagation(); dzInput.click(); });
-
-dzInput.addEventListener('change', (e) => handleFiles(e.target.files));
-hdrInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files.length) loadFiles(e.dataTransfer.files);
+});
 </script>
 </body>
 </html>
